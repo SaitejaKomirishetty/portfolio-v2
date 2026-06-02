@@ -32,6 +32,7 @@ interface WindowStore {
 
   open: (id: AppId) => void;
   close: (id: AppId) => void;
+  closeAll: () => void;
   focus: (id: AppId) => void;
   minimize: (id: AppId) => void;
   /** Restore from minimized (and focus). */
@@ -120,6 +121,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       focused: order.length ? order[order.length - 1] : null,
     });
   },
+
+  closeAll: () => set({ windows: {}, order: [], focused: null }),
 
   focus: (id) => {
     const state = get();
