@@ -21,6 +21,14 @@ interface WindowProps {
 
 type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
+interface Gesture {
+  type: 'drag' | ResizeDir;
+  startX: number;
+  startY: number;
+  start: { x: number; y: number; width: number; height: number };
+  controller: AbortController;
+}
+
 export function Window({ id, children }: WindowProps) {
   const meta = apps[id];
   const win = useWindowStore((s) => s.windows[id]);
@@ -33,13 +41,8 @@ export function Window({ id, children }: WindowProps) {
 
   const reduceMotion = useReducedMotion();
   // Live drag/resize is tracked imperatively to avoid React re-render churn;
-  // we commit to the store on pointer-up.
-  const gesture = useRef<{
-    type: 'drag' | ResizeDir;
-    startX: number;
-    startY: number;
-    start: { x: number; y: number; width: number; height: number };
-  } | null>(null);
+  // we read/commit bounds through the store.
+  const gesture = useRef<Gesture | null>(null);
 
   const minW = meta.minSize?.width ?? 360;
   const minH = meta.minSize?.height ?? 240;
@@ -47,7 +50,7 @@ export function Window({ id, children }: WindowProps) {
   const onPointerMove = useCallback(
     (e: PointerEvent) => {
       const g = gesture.current;
-      if (!g || !win) return;
+      if (!g) return;
       const dx = e.clientX - g.startX;
       const dy = e.clientY - g.startY;
       const vw = window.innerWidth;
@@ -87,47 +90,41 @@ export function Window({ id, children }: WindowProps) {
       y = Math.max(MENUBAR_HEIGHT, y);
       setBounds(id, { x, y, width, height });
     },
-    [id, win, setBounds, minW, minH]
+    [id, setBounds, minW, minH]
   );
 
   const endGesture = useCallback(() => {
+    gesture.current?.controller.abort();
     gesture.current = null;
     document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', endGesture);
-  }, [onPointerMove]);
+  }, []);
 
-  useEffect(() => () => endGesture(), [endGesture]);
+  // Begin a drag or resize gesture; listeners auto-remove via AbortController.
+  const startGesture = useCallback(
+    (type: Gesture['type'], e: ReactPointerEvent) => {
+      const current = useWindowStore.getState().windows[id];
+      if (!current || current.maximized) return;
+      focus(id);
+      const controller = new AbortController();
+      gesture.current = {
+        type,
+        startX: e.clientX,
+        startY: e.clientY,
+        start: { ...current.bounds },
+        controller,
+      };
+      document.body.style.userSelect = 'none';
+      window.addEventListener('pointermove', onPointerMove, {
+        signal: controller.signal,
+      });
+      window.addEventListener('pointerup', endGesture, {
+        signal: controller.signal,
+      });
+    },
+    [id, focus, onPointerMove, endGesture]
+  );
 
-  const startDrag = (e: ReactPointerEvent) => {
-    if (!win || win.maximized) return;
-    focus(id);
-    gesture.current = {
-      type: 'drag',
-      startX: e.clientX,
-      startY: e.clientY,
-      start: { ...win.bounds },
-    };
-    document.body.style.userSelect = 'none';
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', endGesture);
-  };
-
-  const startResize = (dir: ResizeDir) => (e: ReactPointerEvent) => {
-    if (!win || win.maximized) return;
-    e.stopPropagation();
-    focus(id);
-    gesture.current = {
-      type: dir,
-      startX: e.clientX,
-      startY: e.clientY,
-      start: { ...win.bounds },
-    };
-    document.body.style.userSelect = 'none';
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', endGesture);
-  };
+  useEffect(() => endGesture, [endGesture]);
 
   if (!win) return null;
 
@@ -170,7 +167,7 @@ export function Window({ id, children }: WindowProps) {
         pointerEvents: minimized ? 'none' : 'auto',
       }}
       className={cn(
-        'flex flex-col overflow-hidden rounded-xl border-hairline border',
+        'flex flex-col overflow-hidden rounded-xl border border-hairline',
         'bg-[var(--background)]',
         focused
           ? 'shadow-[0_22px_70px_-12px_rgba(0,0,0,0.55)]'
@@ -179,7 +176,7 @@ export function Window({ id, children }: WindowProps) {
     >
       {/* Title bar */}
       <div
-        onPointerDown={startDrag}
+        onPointerDown={(e) => startGesture('drag', e)}
         onDoubleClick={() => toggleMaximize(id)}
         className={cn(
           'relative flex h-9 shrink-0 items-center gap-2 px-3 no-select',
@@ -209,7 +206,7 @@ export function Window({ id, children }: WindowProps) {
       </div>
 
       {/* Resize handles (hidden while maximized) */}
-      {!win.maximized && <ResizeHandles onStart={startResize} />}
+      {!win.maximized && <ResizeHandles onStart={startGesture} />}
     </motion.div>
   );
 }
@@ -217,42 +214,46 @@ export function Window({ id, children }: WindowProps) {
 function ResizeHandles({
   onStart,
 }: {
-  onStart: (dir: ResizeDir) => (e: ReactPointerEvent) => void;
+  onStart: (dir: ResizeDir, e: ReactPointerEvent) => void;
 }) {
   const edge = 'absolute z-10';
+  const handle = (dir: ResizeDir) => (e: ReactPointerEvent) => {
+    e.stopPropagation();
+    onStart(dir, e);
+  };
   return (
     <>
       <div
         className={cn(edge, 'inset-x-2 top-0 h-1 cursor-ns-resize')}
-        onPointerDown={onStart('n')}
+        onPointerDown={handle('n')}
       />
       <div
         className={cn(edge, 'inset-x-2 bottom-0 h-1 cursor-ns-resize')}
-        onPointerDown={onStart('s')}
+        onPointerDown={handle('s')}
       />
       <div
         className={cn(edge, 'inset-y-2 left-0 w-1 cursor-ew-resize')}
-        onPointerDown={onStart('w')}
+        onPointerDown={handle('w')}
       />
       <div
         className={cn(edge, 'inset-y-2 right-0 w-1 cursor-ew-resize')}
-        onPointerDown={onStart('e')}
+        onPointerDown={handle('e')}
       />
       <div
         className={cn(edge, 'left-0 top-0 h-3 w-3 cursor-nwse-resize')}
-        onPointerDown={onStart('nw')}
+        onPointerDown={handle('nw')}
       />
       <div
         className={cn(edge, 'right-0 top-0 h-3 w-3 cursor-nesw-resize')}
-        onPointerDown={onStart('ne')}
+        onPointerDown={handle('ne')}
       />
       <div
         className={cn(edge, 'bottom-0 left-0 h-3 w-3 cursor-nesw-resize')}
-        onPointerDown={onStart('sw')}
+        onPointerDown={handle('sw')}
       />
       <div
         className={cn(edge, 'bottom-0 right-0 h-3 w-3 cursor-nwse-resize')}
-        onPointerDown={onStart('se')}
+        onPointerDown={handle('se')}
       />
     </>
   );

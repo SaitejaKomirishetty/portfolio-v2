@@ -111,10 +111,11 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
   close: (id) => {
     const state = get();
-    const { [id]: _removed, ...rest } = state.windows;
+    const windows = { ...state.windows };
+    delete windows[id];
     const order = state.order.filter((w) => w !== id);
     set({
-      windows: rest,
+      windows,
       order,
       focused: order.length ? order[order.length - 1] : null,
     });
