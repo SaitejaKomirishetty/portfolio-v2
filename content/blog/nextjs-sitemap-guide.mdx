@@ -1,0 +1,173 @@
+---
+title: 'Architecting Discoverability: A Comprehensive Guide to Sitemap Implementation in Next.js'
+date: '2025-10-14'
+description: 'Why sitemaps are critical SEO infrastructure, and how to implement them in Next.js — App Router, Pages Router, enterprise scaling, and native vs. third-party tooling.'
+tags: ['web-dev', 'seo', 'nextjs']
+cover: ''
+published: true
+featured: true
+---
+
+{/* NOTE: Reconstructed from the original article's structure and key points.
+    Feel free to paste your original prose back in — frontmatter + headings match. */}
+
+A sitemap is **a structured roadmap of a website's important pages**. It tells
+search engines what exists, when it last changed, and how often it changes — so
+they can crawl efficiently. Treat it not as an optional SEO accessory but as
+**core discoverability infrastructure**.
+
+## When Do You Actually Need a Sitemap?
+
+Sitemaps matter most when:
+
+- Your site is **large** (500+ pages).
+- It's a **new domain** with few inbound links.
+- It has a **complex architecture** where some pages are hard to reach by
+  crawling alone.
+- It's rich in **media** (images, video) you want indexed.
+
+## App Router: the `sitemap.ts` Convention
+
+The App Router ships a first-class, type-safe convention. Create
+`app/sitemap.ts` and export a default function returning a `MetadataRoute.Sitemap`:
+
+```ts
+import type { MetadataRoute } from 'next';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = 'https://example.com';
+
+  return [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+  ];
+}
+```
+
+To include dynamic routes, fetch your data and map it:
+
+```ts
+import type { MetadataRoute } from 'next';
+import { getAllPosts } from '@/lib/posts';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://example.com';
+  const posts = await getAllPosts();
+
+  const blogEntries = posts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }));
+
+  return [
+    { url: baseUrl, lastModified: new Date(), priority: 1 },
+    ...blogEntries,
+  ];
+}
+```
+
+## Pages Router: `getServerSideProps`
+
+In the Pages Router you generate XML yourself, typically from a route that
+streams the response:
+
+```tsx
+// pages/sitemap.xml.tsx
+import type { GetServerSideProps } from 'next';
+
+function generateSiteMap(posts: { slug: string }[]) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url><loc>https://example.com</loc></url>
+    ${posts
+      .map((p) => `<url><loc>https://example.com/blog/${p.slug}</loc></url>`)
+      .join('')}
+  </urlset>`;
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+  const posts = await fetchPosts();
+  res.setHeader('Content-Type', 'text/xml');
+  res.write(generateSiteMap(posts));
+  res.end();
+  return { props: {} };
+};
+
+export default function SiteMap() {
+  return null;
+}
+```
+
+## Enterprise Scaling with `generateSitemaps()`
+
+A single sitemap is capped at **50,000 URLs**. For very large sites, the App
+Router's `generateSitemaps()` splits content into multiple sitemap files
+behind a sitemap index:
+
+```ts
+import type { MetadataRoute } from 'next';
+
+export async function generateSitemaps() {
+  // Return one entry per chunk of ~50k URLs.
+  return [{ id: 0 }, { id: 1 }, { id: 2 }];
+}
+
+export default async function sitemap({
+  id,
+}: {
+  id: number;
+}): Promise<MetadataRoute.Sitemap> {
+  const start = id * 50000;
+  const end = start + 50000;
+  const products = await getProducts(start, end);
+  return products.map((p) => ({ url: `https://example.com/p/${p.id}` }));
+}
+```
+
+## Native vs. Third-Party (`next-sitemap`)
+
+- **Native App Router** wins for small-to-medium projects: zero dependencies,
+  type-safe, and dead simple.
+- **`next-sitemap`** and similar libraries become worthwhile for enterprise
+  scale where you need automatic sitemap _indexing_, splitting, and richer
+  config out of the box.
+
+## Architectural Guidance
+
+- Prefer **dynamic generation** over hand-maintained static XML for
+  content-driven sites.
+- Use **ISR (Incremental Static Revalidation)** to balance freshness against
+  performance — regenerate periodically instead of on every request.
+
+## Deployment & Maintenance
+
+- **Validate** via Google Search Console.
+- **Advertise** your sitemap in `robots.txt`:
+
+```text
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml
+```
+
+- For CMS-driven content, trigger **webhook-based revalidation** so new content
+  shows up in the sitemap quickly.
+
+## Conclusion
+
+A good sitemap is quiet infrastructure: invisible to users, invaluable to
+crawlers. In Next.js, the App Router makes the common case trivial and the
+enterprise case tractable — so there's no excuse to skip it.

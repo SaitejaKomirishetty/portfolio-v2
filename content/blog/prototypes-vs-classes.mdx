@@ -1,0 +1,118 @@
+---
+title: 'Prototypes vs. Classes: The Real Story ⛓️'
+date: '2025-11-25'
+description: "A beginner-friendly guide to JavaScript's prototypal inheritance — and why the `class` keyword is really just syntactic sugar over it."
+tags: ['web-dev', 'javascript', 'fundamentals']
+cover: ''
+published: true
+---
+
+{/* NOTE: Reconstructed from the original article's structure and key points.
+    Feel free to paste your original prose back in — frontmatter + headings match. */}
+
+If you've written modern JavaScript, you've used `class`. But here's the twist:
+JavaScript's `class` keyword is **syntactic sugar** over its core _prototypal
+inheritance_ system. Classes aren't a different mechanism — they're a cleaner
+way to write the prototype-based code JavaScript has always run under the hood.
+
+## Prototypal Inheritance Basics
+
+Every JavaScript object has a hidden link to another object called its
+**prototype**. When you access a property, JavaScript looks on the object
+itself first; if it's not there, it walks _up the prototype chain_ until it
+finds the property or hits `null`.
+
+```js
+const animal = {
+  eat() {
+    console.log('munch munch');
+  },
+};
+
+const dog = Object.create(animal);
+dog.bark = () => console.log('woof');
+
+dog.bark(); // "woof"  — found on dog
+dog.eat(); //  "munch munch" — found on animal via the prototype chain
+```
+
+## Constructor Functions (Pre-ES6)
+
+Before 2015, we built "blueprints" for objects using **constructor functions**
+paired with their `.prototype`. Shared methods live on the prototype so every
+instance reuses the same function instead of duplicating it.
+
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// Shared across ALL instances — defined once.
+Person.prototype.greet = function () {
+  console.log(`Hi, I'm ${this.name}`);
+};
+
+const a = new Person('Saiteja');
+a.greet(); // "Hi, I'm Saiteja"
+```
+
+## ES6 Classes
+
+Classes give us the same behavior with cleaner, more organized syntax. Methods
+declared in a class body are _still_ added to the prototype behind the scenes.
+
+```js
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log(`Hi, I'm ${this.name}`);
+  }
+}
+
+const a = new Person('Saiteja');
+a.greet(); // "Hi, I'm Saiteja"
+
+// Proof it's still prototypes:
+console.log(typeof Person); // "function"
+console.log(a.greet === Person.prototype.greet); // true
+```
+
+Inheritance reads much more naturally too:
+
+```js
+class Developer extends Person {
+  constructor(name, stack) {
+    super(name);
+    this.stack = stack;
+  }
+
+  greet() {
+    super.greet();
+    console.log(`I write ${this.stack}.`);
+  }
+}
+```
+
+## Key Benefits of Classes
+
+- **Readability & organization** — related logic lives in one block.
+- **Simpler inheritance** — `extends` and `super` instead of manual
+  `Object.create` wiring.
+- **Built-in safeguards** — classes _require_ `new`; forget it and you get a
+  clear error.
+- **Identical performance** — same prototype machinery underneath.
+
+## Important Notes
+
+- Classes are literally functions (`typeof MyClass === 'function'`).
+- Both styles can be mixed freely since they operate identically.
+- Understanding prototypes still pays off: debugging, reading legacy code, and
+  truly grokping how JavaScript works.
+
+## TL;DR
+
+`class` is a friendlier face on prototypal inheritance. Use classes for clean,
+modern code — but know what's happening underneath so nothing surprises you.
