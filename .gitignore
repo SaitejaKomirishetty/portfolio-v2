@@ -44,3 +44,7 @@ next-env.d.ts
 .playwright-mcp/
 *.tsbuildinfo
 
+
+# keep the example env file tracked
+!.env.example
+
