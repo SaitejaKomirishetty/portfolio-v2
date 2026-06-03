@@ -1,24 +1,56 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
 import type { AppId } from '@/data/apps';
-import { About } from './About';
-import { Terminal } from './Terminal';
-import { Projects } from './Projects';
-import { Preview } from './Preview';
-import { Blog } from './Blog';
-import { Contact } from './Contact';
-import { Photos } from './Photos';
-import { Settings } from './Settings';
 
-/** Maps each AppId to the React component rendered inside its window. */
+/**
+ * Maps each AppId to its window content component. Each app is code-split via
+ * next/dynamic so it loads only when first opened (smaller initial bundle).
+ *
+ * Note: next/dynamic options must be inline object literals (compile-time
+ * analyzed), so the `{ loading, ssr }` config is repeated per entry.
+ */
+
+function AppLoading() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground/60" />
+    </div>
+  );
+}
+
 export const appComponents: Record<AppId, ComponentType> = {
-  about: About,
-  terminal: Terminal,
-  projects: Projects,
-  resume: Preview,
-  blog: Blog,
-  contact: Contact,
-  photos: Photos,
-  settings: Settings,
+  about: dynamic(() => import('./About').then((m) => m.About), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  terminal: dynamic(() => import('./Terminal').then((m) => m.Terminal), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  projects: dynamic(() => import('./Projects').then((m) => m.Projects), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  resume: dynamic(() => import('./Preview').then((m) => m.Preview), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  blog: dynamic(() => import('./Blog').then((m) => m.Blog), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  contact: dynamic(() => import('./Contact').then((m) => m.Contact), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  photos: dynamic(() => import('./Photos').then((m) => m.Photos), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  settings: dynamic(() => import('./Settings').then((m) => m.Settings), {
+    loading: AppLoading,
+    ssr: false,
+  }),
 };

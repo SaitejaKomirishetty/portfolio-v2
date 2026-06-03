@@ -43,8 +43,8 @@ export const profile: Profile = {
     'Outside of code, I follow Formula 1 racing and enjoy bike riding for mental clarity.',
   ],
   location: 'Bengaluru, Karnataka, India',
-  // TODO: add a real avatar image to /public/avatar.jpg (square, ~512px).
-  avatar: '/avatar.jpg',
+  // TODO: add a real avatar image to /public/avatar.png (square, ~512px).
+  avatar: '/avatar.png',
   siteUrl: 'https://saitejakomirishetty.com',
   email: 'komirishettysaiteja@gmail.com',
   // TODO: drop your CV at /public/resume.pdf to enable the Preview (Resume) app.
@@ -66,6 +66,6 @@ export const profile: Profile = {
     { label: 'Focus', value: 'React · Next.js · TypeScript' },
     { label: 'Experience', value: '3+ years' },
   ],
-  interests: ['Formula 1', 'Bike riding', 'Web performance', 'UI/UX'],
+  interests: ['Formula 1', 'Bike riding', 'Web performance', 'UI/UX','software development'],
   socials,
 };

@@ -85,6 +85,12 @@ body {
   user-select: none;
 }
 
+/* Baseline visible focus ring for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 /* Honor reduced motion globally for CSS-driven animations */
 @media (prefers-reduced-motion: reduce) {
   *,

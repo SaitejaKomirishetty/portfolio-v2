@@ -6,7 +6,9 @@ import { useWindowStore } from '@/store/useWindowStore';
 import { useSystemStore, type BootPhase } from '@/store/useSystemStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useMounted } from '@/hooks/useMounted';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { wallpapers, defaultWallpaperId } from '@/data/wallpapers';
+import { allAppIds, type AppId } from '@/data/apps';
 import { WindowManager } from './WindowManager';
 import { MenuBar } from './MenuBar';
 import { Dock } from './Dock';
@@ -16,6 +18,8 @@ import { LoginScreen } from './LoginScreen';
 import { AboutThisMac } from './AboutThisMac';
 import { ContextMenu } from './ContextMenu';
 import { Spotlight } from './Spotlight';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
+import { MobileHome } from './MobileHome';
 
 /**
  * The macOS desktop environment. Orchestrates the boot → login → desktop
@@ -23,12 +27,12 @@ import { Spotlight } from './Spotlight';
  */
 export function Desktop() {
   const mounted = useMounted();
+  const isMobile = useIsMobile();
   const hasBooted = useSystemStore((s) => s.hasBooted);
   const markBooted = useSystemStore((s) => s.markBooted);
   const wallpaperId = useSystemStore((s) => s.wallpaperId);
   const open = useWindowStore((s) => s.open);
   const openContextMenu = useUIStore((s) => s.openContextMenu);
-  const toggleSpotlight = useUIStore((s) => s.toggleSpotlight);
 
   const [phase, setPhase] = useState<BootPhase>('boot');
   const firstLogin = useRef(true);
@@ -51,18 +55,14 @@ export function Desktop() {
     if (mounted && !hasBooted && phase === 'desktop') setPhase('login');
   }, [hasBooted, mounted, phase]);
 
-  // Cmd/Ctrl + Space opens Spotlight (only on the desktop).
+  // Deep link: ?app=projects opens that app once the desktop is active.
   useEffect(() => {
     if (phase !== 'desktop') return;
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.code === 'Space') {
-        e.preventDefault();
-        toggleSpotlight();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [phase, toggleSpotlight]);
+    const param = new URLSearchParams(window.location.search).get('app');
+    if (param && (allAppIds as string[]).includes(param)) {
+      open(param as AppId);
+    }
+  }, [phase, open]);
 
   const handleLogin = useCallback(() => {
     markBooted();
@@ -78,6 +78,9 @@ export function Desktop() {
     // Avoid hydration mismatch: paint a neutral black until hydrated.
     return <div className="h-dvh w-screen bg-black" />;
   }
+
+  // Touch / small screens get the iOS-style springboard instead of windows.
+  if (isMobile) return <MobileHome />;
 
   return (
     <div
@@ -95,6 +98,7 @@ export function Desktop() {
       <ContextMenu />
       <AboutThisMac />
       <Spotlight />
+      <KeyboardShortcuts />
 
       <AnimatePresence>
         {phase === 'boot' && (

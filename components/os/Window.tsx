@@ -40,9 +40,33 @@ export function Window({ id, children }: WindowProps) {
   const setBounds = useWindowStore((s) => s.setBounds);
 
   const reduceMotion = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
   // Live drag/resize is tracked imperatively to avoid React re-render churn;
   // we read/commit bounds through the store.
   const gesture = useRef<Gesture | null>(null);
+
+  // Move keyboard focus into the window when it opens (accessibility).
+  useEffect(() => {
+    rootRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  // Trap Tab focus within the window so keyboard users stay scoped to it.
+  const onTrapKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab' || !rootRef.current) return;
+    const focusable = rootRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   const minW = meta.minSize?.width ?? 360;
   const minH = meta.minSize?.height ?? 240;
@@ -132,11 +156,13 @@ export function Window({ id, children }: WindowProps) {
 
   return (
     <motion.div
+      ref={rootRef}
       role="dialog"
       aria-label={`${meta.name} window`}
       aria-modal={false}
       tabIndex={-1}
       onPointerDown={() => focus(id)}
+      onKeyDown={onTrapKeyDown}
       initial={
         reduceMotion ? false : { scale: 0.92, opacity: 0, y: bounds.y + 12 }
       }
