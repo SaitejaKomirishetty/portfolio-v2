@@ -7,7 +7,12 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import {
+  motion,
+  animate,
+  useMotionValue,
+  useReducedMotion,
+} from 'motion/react';
 import { useWindowStore } from '@/store/useWindowStore';
 import { apps, type AppId } from '@/data/apps';
 import { TrafficLights } from './TrafficLights';
@@ -41,14 +46,53 @@ export function Window({ id, children }: WindowProps) {
 
   const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
-  // Live drag/resize is tracked imperatively to avoid React re-render churn;
-  // we read/commit bounds through the store.
   const gesture = useRef<Gesture | null>(null);
+
+  // Position + size live as motion values so drag/resize update the transform
+  // directly (no React re-render, no spring) — the window tracks the cursor
+  // 1:1. They are committed back to the store only when a gesture ends.
+  const x = useMotionValue(win?.bounds.x ?? 0);
+  const y = useMotionValue(win?.bounds.y ?? 0);
+  const w = useMotionValue(win?.bounds.width ?? meta.defaultSize.width);
+  const h = useMotionValue(win?.bounds.height ?? meta.defaultSize.height);
+
+  const minW = meta.minSize?.width ?? 360;
+  const minH = meta.minSize?.height ?? 240;
 
   // Move keyboard focus into the window when it opens (accessibility).
   useEffect(() => {
     rootRef.current?.focus({ preventScroll: true });
   }, []);
+
+  const bx = win?.bounds.x;
+  const by = win?.bounds.y;
+  const bw = win?.bounds.width;
+  const bh = win?.bounds.height;
+  const minimized = win?.minimized ?? false;
+
+  // Sync motion values to the store when geometry changes (maximize / restore
+  // / minimize / open / drag-commit). During a drag the store isn't written
+  // until release, so these deps don't change mid-drag and this never fights
+  // the pointer.
+  useEffect(() => {
+    if (bx == null || by == null) return;
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 900;
+    const transition = reduceMotion
+      ? { duration: 0 }
+      : { duration: 0.28, ease: 'easeOut' as const };
+
+    const targetX = minimized ? (vw - (bw ?? 0)) / 2 : bx;
+    const targetY = minimized ? vh : by;
+
+    const controls = [
+      animate(x, targetX, transition),
+      animate(y, targetY, transition),
+      animate(w, bw ?? 0, transition),
+      animate(h, bh ?? 0, transition),
+    ];
+    return () => controls.forEach((c) => c.stop());
+  }, [bx, by, bw, bh, minimized, reduceMotion, x, y, w, h]);
 
   // Trap Tab focus within the window so keyboard users stay scoped to it.
   const onTrapKeyDown = (e: React.KeyboardEvent) => {
@@ -68,9 +112,6 @@ export function Window({ id, children }: WindowProps) {
     }
   };
 
-  const minW = meta.minSize?.width ?? 360;
-  const minH = meta.minSize?.height ?? 240;
-
   const onPointerMove = useCallback(
     (e: PointerEvent) => {
       const g = gesture.current;
@@ -82,46 +123,60 @@ export function Window({ id, children }: WindowProps) {
       const maxY = vh - DOCK_RESERVED;
 
       if (g.type === 'drag') {
-        const x = clamp(g.start.x + dx, 60 - g.start.width, vw - 60);
-        const y = clamp(g.start.y + dy, MENUBAR_HEIGHT, maxY - 16);
-        setBounds(id, { x, y });
+        x.set(clamp(g.start.x + dx, 60 - g.start.width, vw - 60));
+        y.set(clamp(g.start.y + dy, MENUBAR_HEIGHT, maxY - 16));
         return;
       }
 
       // Resize — adjust the edges named in the direction.
-      let { x, y, width, height } = g.start;
+      let nx = g.start.x;
+      let ny = g.start.y;
+      let nw = g.start.width;
+      let nh = g.start.height;
       const dir = g.type;
-      if (dir.includes('e')) width = g.start.width + dx;
-      if (dir.includes('s')) height = g.start.height + dy;
+      if (dir.includes('e')) nw = g.start.width + dx;
+      if (dir.includes('s')) nh = g.start.height + dy;
       if (dir.includes('w')) {
-        width = g.start.width - dx;
-        x = g.start.x + dx;
+        nw = g.start.width - dx;
+        nx = g.start.x + dx;
       }
       if (dir.includes('n')) {
-        height = g.start.height - dy;
-        y = g.start.y + dy;
+        nh = g.start.height - dy;
+        ny = g.start.y + dy;
       }
 
       // Enforce minimums while keeping the anchored edge fixed.
-      if (width < minW) {
-        if (dir.includes('w')) x = g.start.x + (g.start.width - minW);
-        width = minW;
+      if (nw < minW) {
+        if (dir.includes('w')) nx = g.start.x + (g.start.width - minW);
+        nw = minW;
       }
-      if (height < minH) {
-        if (dir.includes('n')) y = g.start.y + (g.start.height - minH);
-        height = minH;
+      if (nh < minH) {
+        if (dir.includes('n')) ny = g.start.y + (g.start.height - minH);
+        nh = minH;
       }
-      y = Math.max(MENUBAR_HEIGHT, y);
-      setBounds(id, { x, y, width, height });
+      ny = Math.max(MENUBAR_HEIGHT, ny);
+
+      x.set(nx);
+      y.set(ny);
+      w.set(nw);
+      h.set(nh);
     },
-    [id, setBounds, minW, minH]
+    [x, y, w, h, minW, minH]
   );
 
   const endGesture = useCallback(() => {
-    gesture.current?.controller.abort();
+    const g = gesture.current;
     gesture.current = null;
     document.body.style.userSelect = '';
-  }, []);
+    g?.controller.abort();
+    // Commit the final geometry to the store in a single update.
+    setBounds(id, {
+      x: x.get(),
+      y: y.get(),
+      width: w.get(),
+      height: h.get(),
+    });
+  }, [id, setBounds, x, y, w, h]);
 
   // Begin a drag or resize gesture; listeners auto-remove via AbortController.
   const startGesture = useCallback(
@@ -134,7 +189,8 @@ export function Window({ id, children }: WindowProps) {
         type,
         startX: e.clientX,
         startY: e.clientY,
-        start: { ...current.bounds },
+        // Seed from the live motion values (current on-screen geometry).
+        start: { x: x.get(), y: y.get(), width: w.get(), height: h.get() },
         controller,
       };
       document.body.style.userSelect = 'none';
@@ -145,14 +201,14 @@ export function Window({ id, children }: WindowProps) {
         signal: controller.signal,
       });
     },
-    [id, focus, onPointerMove, endGesture]
+    [id, focus, onPointerMove, endGesture, x, y, w, h]
   );
 
   useEffect(() => endGesture, [endGesture]);
 
   if (!win) return null;
 
-  const { bounds, zIndex, minimized } = win;
+  const { zIndex } = win;
 
   return (
     <motion.div
@@ -163,23 +219,12 @@ export function Window({ id, children }: WindowProps) {
       tabIndex={-1}
       onPointerDown={() => focus(id)}
       onKeyDown={onTrapKeyDown}
-      initial={
-        reduceMotion ? false : { scale: 0.92, opacity: 0, y: bounds.y + 12 }
-      }
-      animate={
-        minimized
-          ? {
-              // Shrink + fade toward the bottom-center of the screen.
-              scale: reduceMotion ? 1 : 0.08,
-              opacity: 0,
-              x:
-                typeof window !== 'undefined'
-                  ? (window.innerWidth - bounds.width) / 2
-                  : bounds.x,
-              y: typeof window !== 'undefined' ? window.innerHeight : 900,
-            }
-          : { scale: 1, opacity: 1, x: bounds.x, y: bounds.y }
-      }
+      initial={reduceMotion ? false : { scale: 0.94, opacity: 0 }}
+      animate={{
+        // Position + size are motion values; only scale/opacity animate here.
+        scale: minimized ? (reduceMotion ? 1 : 0.08) : 1,
+        opacity: minimized ? 0 : 1,
+      }}
       exit={reduceMotion ? { opacity: 0 } : { scale: 0.92, opacity: 0 }}
       transition={
         reduceMotion
@@ -190,8 +235,10 @@ export function Window({ id, children }: WindowProps) {
         position: 'absolute',
         left: 0,
         top: 0,
-        width: bounds.width,
-        height: bounds.height,
+        x,
+        y,
+        width: w,
+        height: h,
         zIndex,
         transformOrigin: 'bottom center',
         pointerEvents: minimized ? 'none' : 'auto',
