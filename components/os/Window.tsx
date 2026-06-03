@@ -169,10 +169,14 @@ export function Window({ id, children }: WindowProps) {
       animate={
         minimized
           ? {
-              scale: reduceMotion ? 1 : 0.18,
+              // Shrink + fade toward the bottom-center of the screen.
+              scale: reduceMotion ? 1 : 0.08,
               opacity: 0,
+              x:
+                typeof window !== 'undefined'
+                  ? (window.innerWidth - bounds.width) / 2
+                  : bounds.x,
               y: typeof window !== 'undefined' ? window.innerHeight : 900,
-              x: bounds.x,
             }
           : { scale: 1, opacity: 1, x: bounds.x, y: bounds.y }
       }

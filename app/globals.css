@@ -91,6 +91,16 @@ body {
   outline-offset: 2px;
 }
 
+/* Text fields supply their own focus affordance (caret / border / ring),
+   so suppress the global outline to avoid a doubled "border" look. */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* Honor reduced motion globally for CSS-driven animations */
 @media (prefers-reduced-motion: reduce) {
   *,
