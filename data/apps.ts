@@ -106,6 +106,7 @@ export const apps: Record<AppId, AppMeta> = {
     tile: 'from-zinc-50 to-zinc-200',
     defaultSize: { width: 760, height: 540 },
     minSize: { width: 420, height: 360 },
+    onDesktop: true,
     inDock: false,
     description: 'A small gallery',
   },
