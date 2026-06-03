@@ -98,7 +98,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-[8500] flex items-start justify-center px-4 pt-[18vh]"
+      className="fixed inset-0 z-[8500] flex items-center justify-center px-4"
     >
       <motion.div
         initial={{ scale: 0.96, y: -8, opacity: 0 }}
