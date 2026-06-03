@@ -48,3 +48,7 @@ next-env.d.ts
 # keep the example env file tracked
 !.env.example
 
+
+# next dev temp files
+*.tmp.*
+
