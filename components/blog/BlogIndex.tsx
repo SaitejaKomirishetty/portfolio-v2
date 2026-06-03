@@ -42,8 +42,8 @@ export function BlogIndex({
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        {filtered.map((post) => (
-          <PostCard key={post.slug} post={post} />
+        {filtered.map((post, i) => (
+          <PostCard key={post.slug} post={post} priority={i < 2} />
         ))}
       </div>
 

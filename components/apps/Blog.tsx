@@ -53,6 +53,14 @@ export function Blog() {
       <div className="macos-scroll flex-1 overflow-auto p-6">
         {active ? (
           <article>
+            {active.cover && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={active.cover}
+                alt=""
+                className="mb-4 aspect-[16/9] w-full rounded-xl object-cover"
+              />
+            )}
             <div className="flex flex-wrap gap-1.5">
               {active.tags.map((t) => (
                 <span

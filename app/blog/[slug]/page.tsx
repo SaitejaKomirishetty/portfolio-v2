@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import {
@@ -110,6 +111,19 @@ export default async function PostPage({ params }: Props) {
           </span>
         </p>
       </header>
+
+      {post.cover && (
+        <div className="relative mt-6 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-hairline">
+          <Image
+            src={post.cover}
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 768px) 768px, 100vw"
+            className="object-cover"
+          />
+        </div>
+      )}
 
       {toc.length >= 2 && (
         <details className="mt-6 rounded-xl border border-hairline bg-foreground/[0.03] p-4 [&_p]:mb-0">

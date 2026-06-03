@@ -106,7 +106,7 @@ changes needed:
    date: '2026-01-31'
    description: 'A one-line summary used for cards + SEO.'
    tags: ['web-dev', 'react']
-   cover: ''
+   cover: '/blog_covers/my-post.jpg'
    published: true
    featured: false
    ---
@@ -114,7 +114,13 @@ changes needed:
    Write MDX here. Fenced code blocks get Shiki syntax highlighting.
    ```
 
-3. That's it — reading time, the index card, RSS, sitemap, OG image, and the
+3. **Banner image (optional):** drop the file in `public/blog_covers/` and set
+   `cover` to its root-relative path, e.g. `cover: '/blog_covers/my-post.jpg'`
+   (an external `https://` URL works too, if its host is allowed in
+   `next.config.ts`). It renders as the post hero, the index-card thumbnail, and
+   the Blog app preview. Leave `cover: ''` for no banner.
+
+4. That's it — reading time, the index card, RSS, sitemap, OG image, and the
    in-desktop Blog app all update automatically. Set `published: false` to hide
    a draft.
 
