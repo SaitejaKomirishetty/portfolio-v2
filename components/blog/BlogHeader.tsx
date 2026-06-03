@@ -12,7 +12,7 @@ export function BlogHeader() {
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <header className="vibrancy-menubar sticky top-0 z-50 border-b border-hairline">
+    <header className="sticky top-0 z-50 border-b border-hairline bg-[var(--background)]">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
         <Link href="/blog" className="font-semibold">
           {profile.name.split(' ')[0]}&apos;s Blog
