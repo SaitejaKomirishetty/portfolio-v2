@@ -62,6 +62,7 @@ export function MenuBar() {
           trigger={<AppleLogo className="h-3.5 w-3.5" />}
           items={appleMenu}
           triggerClassName="px-2"
+          ariaLabel="Apple menu"
         />
         <MenuDropdown
           trigger={<span className="font-semibold">{activeName}</span>}

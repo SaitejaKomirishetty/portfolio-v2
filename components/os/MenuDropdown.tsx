@@ -22,11 +22,14 @@ export function MenuDropdown({
   items,
   triggerClassName,
   align = 'left',
+  ariaLabel,
 }: {
   trigger: ReactNode;
   items: MenuItem[];
   triggerClassName?: string;
   align?: 'left' | 'right';
+  /** Accessible name for the trigger button (needed for icon-only triggers). */
+  ariaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -51,6 +54,7 @@ export function MenuDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
+        aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'flex items-center rounded px-2 py-0.5 text-[13px] transition-colors',

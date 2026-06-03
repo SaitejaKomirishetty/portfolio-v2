@@ -9,6 +9,7 @@ import { useMounted } from '@/hooks/useMounted';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { wallpapers, defaultWallpaperId } from '@/data/wallpapers';
 import { allAppIds, type AppId } from '@/data/apps';
+import { profile } from '@/data/profile';
 import { WindowManager } from './WindowManager';
 import { MenuBar } from './MenuBar';
 import { Dock } from './Dock';
@@ -92,8 +93,17 @@ export function Desktop() {
       }}
     >
       <MenuBar />
-      <DesktopIcons />
-      <WindowManager />
+
+      {/* Primary content landmark. `display: contents` adds the <main> role
+          without generating a box, so window positioning/z-index is unchanged. */}
+      <main aria-label="Desktop" className="contents">
+        <h1 className="sr-only">
+          {profile.name} — {profile.role}
+        </h1>
+        <DesktopIcons />
+        <WindowManager />
+      </main>
+
       <Dock />
       <ContextMenu />
       <AboutThisMac />

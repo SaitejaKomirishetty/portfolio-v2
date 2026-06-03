@@ -20,6 +20,7 @@ export function DesktopIcons() {
       {desktopApps.map((id) => (
         <button
           key={id}
+          aria-label={`Open ${apps[id].name}`}
           onDoubleClick={() => launch(id)}
           onKeyDown={(e) => e.key === 'Enter' && launch(id)}
           className="group flex w-20 cursor-pointer flex-col items-center gap-1 rounded-lg p-1 text-center transition-colors hover:bg-white/15 focus-visible:bg-white/15 focus-visible:outline-none"
