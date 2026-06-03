@@ -25,7 +25,7 @@ export function DesktopIcons() {
           className="group flex w-20 cursor-pointer flex-col items-center gap-1 rounded-lg p-1 text-center transition-colors hover:bg-white/15 focus-visible:bg-white/15 focus-visible:outline-none"
         >
           <AppIcon id={id} className="h-12 w-12" glyphClassName="h-6 w-6" />
-          <span className="rounded px-1 text-[11px] font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] group-hover:bg-[var(--color-accent)] group-focus-visible:bg-[var(--color-accent)]">
+          <span className="rounded px-1 text-[11px] font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] group-focus-visible:bg-[var(--color-accent)]">
             {apps[id].name}
           </span>
         </button>
