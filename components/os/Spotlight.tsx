@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, CornerDownLeft } from 'lucide-react';
@@ -92,6 +92,15 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
 
   const clampedSelected = Math.min(selected, Math.max(0, results.length - 1));
 
+  // Keep the highlighted result scrolled into view during arrow navigation.
+  const listRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const item = listRef.current?.children[clampedSelected] as
+      | HTMLElement
+      | undefined;
+    item?.scrollIntoView({ block: 'nearest' });
+  }, [clampedSelected]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -125,7 +134,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         {results.length > 0 && (
-          <ul className="macos-scroll max-h-80 overflow-auto p-2">
+          <ul ref={listRef} className="macos-scroll max-h-80 overflow-auto p-2">
             {results.map((r, i) => {
               const isSel = i === clampedSelected;
               return (
