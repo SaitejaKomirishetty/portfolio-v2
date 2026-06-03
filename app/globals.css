@@ -22,13 +22,15 @@
 }
 
 :root {
-  --background: #f5f5f7;
+  --background: #ececee;
   --foreground: #1d1d1f;
   /* Vibrancy surface tokens (light) */
-  --surface: 255 255 255;
-  --surface-alpha: 0.72;
+  --surface: 250 250 252;
+  --surface-alpha: 0.7;
   --menubar: 255 255 255;
-  --menubar-alpha: 0.45;
+  --menubar-alpha: 0.36;
+  --dock: 255 255 255;
+  --dock-alpha: 0.32;
   --border-subtle: 0 0 0;
   --border-subtle-alpha: 0.1;
 }
@@ -36,10 +38,12 @@
 .dark {
   --background: #1c1c1e;
   --foreground: #f5f5f7;
-  --surface: 40 40 43;
-  --surface-alpha: 0.72;
-  --menubar: 20 20 22;
-  --menubar-alpha: 0.55;
+  --surface: 44 44 48;
+  --surface-alpha: 0.68;
+  --menubar: 28 28 30;
+  --menubar-alpha: 0.42;
+  --dock: 60 60 66;
+  --dock-alpha: 0.34;
   --border-subtle: 255 255 255;
   --border-subtle-alpha: 0.12;
 }
@@ -65,18 +69,55 @@ body {
 /* Utility classes for macOS vibrancy surfaces */
 @utility vibrancy {
   background-color: rgb(var(--surface) / var(--surface-alpha));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
 }
 
 @utility vibrancy-menubar {
   background-color: rgb(var(--menubar) / var(--menubar-alpha));
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+
+@utility vibrancy-strong {
+  background-color: rgb(var(--surface) / 0.62);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+}
+
+/* The frosted macOS dock panel: deep blur, bright top edge, soft shadow. */
+@utility dock-glass {
+  background-color: rgb(var(--dock) / var(--dock-alpha));
+  backdrop-filter: blur(34px) saturate(200%);
+  -webkit-backdrop-filter: blur(34px) saturate(200%);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.28),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.06),
+    0 16px 44px -10px rgba(0, 0, 0, 0.55);
 }
 
 @utility border-hairline {
   border-color: rgb(var(--border-subtle) / var(--border-subtle-alpha));
+}
+
+/* macOS-style superellipse (squircle) icon shape. */
+@utility squircle {
+  border-radius: 23%;
+}
+
+/* Big, soft macOS window shadow. */
+@utility window-shadow {
+  box-shadow:
+    0 0 0 0.5px rgb(var(--border-subtle) / 0.18),
+    0 32px 60px -12px rgba(0, 0, 0, 0.5),
+    0 12px 24px -8px rgba(0, 0, 0, 0.35);
+}
+
+@utility window-shadow-inactive {
+  box-shadow:
+    0 0 0 0.5px rgb(var(--border-subtle) / 0.12),
+    0 18px 40px -16px rgba(0, 0, 0, 0.42);
 }
 
 /* Prevent text selection on chrome (menus, dock, title bars) */

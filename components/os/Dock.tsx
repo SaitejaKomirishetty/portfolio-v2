@@ -26,17 +26,17 @@ export function Dock() {
   const reduce = useReducedMotion();
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-2 z-[5000] flex justify-center">
+    <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-[5000] flex justify-center">
       <motion.div
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
-        className="vibrancy pointer-events-auto flex items-end gap-2.5 rounded-2xl border border-hairline border-white/20 px-3 pb-2 pt-2.5 shadow-2xl no-select"
+        className="dock-glass pointer-events-auto flex items-end gap-1.5 rounded-[26px] px-2.5 pb-1.5 pt-2 no-select"
       >
         {dockApps.map((id) => (
           <DockApp key={id} id={id} mouseX={mouseX} reduce={!!reduce} />
         ))}
 
-        <div className="mx-1 h-12 w-px self-center bg-white/20" />
+        <div className="mx-1.5 h-11 w-px self-center bg-white/15" />
 
         <DockLink
           href={socials.github}
@@ -97,7 +97,7 @@ function DockApp({
 
   return (
     <div className="group/dock relative flex flex-col items-center">
-      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-md bg-zinc-800/90 px-2 py-1 text-xs text-white shadow-lg group-hover/dock:block">
+      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-lg bg-zinc-900/85 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md group-hover/dock:block">
         {meta.name}
       </span>
       <motion.button
@@ -146,7 +146,7 @@ function DockLink({
   const { ref, width } = useMagnify<HTMLAnchorElement>(mouseX, reduce);
   return (
     <div className="group/dock relative flex flex-col items-center">
-      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-md bg-zinc-800/90 px-2 py-1 text-xs text-white shadow-lg group-hover/dock:block">
+      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-lg bg-zinc-900/85 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md group-hover/dock:block">
         {label}
       </span>
       <motion.a
@@ -156,7 +156,7 @@ function DockLink({
         rel="noopener noreferrer"
         aria-label={label}
         style={{ width: width ?? BASE }}
-        className="flex aspect-square items-center justify-center rounded-[22%] bg-gradient-to-br from-zinc-600 to-zinc-800 shadow-md"
+        className="squircle flex aspect-square items-center justify-center bg-gradient-to-br from-zinc-600 to-zinc-800 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] ring-1 ring-inset ring-white/15"
       >
         {children}
       </motion.a>
@@ -175,16 +175,16 @@ function DockTrash({
   const { ref, width } = useMagnify<HTMLDivElement>(mouseX, reduce);
   return (
     <div className="group/dock relative flex flex-col items-center">
-      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-md bg-zinc-800/90 px-2 py-1 text-xs text-white shadow-lg group-hover/dock:block">
+      <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-lg bg-zinc-900/85 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md group-hover/dock:block">
         Trash
       </span>
       <motion.div
         ref={ref}
         style={{ width: width ?? BASE }}
-        className="flex aspect-square items-center justify-center rounded-[22%] bg-gradient-to-br from-zinc-300 to-zinc-500 shadow-md"
+        className="squircle flex aspect-square items-center justify-center bg-gradient-to-br from-zinc-300 to-zinc-500 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] ring-1 ring-inset ring-white/20"
         aria-hidden
       >
-        <Trash2 className="h-1/2 w-1/2 text-zinc-800" />
+        <Trash2 className="h-1/2 w-1/2 text-zinc-700" />
       </motion.div>
       <span className="mt-0.5 h-1 w-1 rounded-full opacity-0" />
     </div>

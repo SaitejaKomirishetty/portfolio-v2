@@ -40,14 +40,19 @@ export function AppIcon({
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-[22%] bg-gradient-to-br shadow-md',
+        'squircle relative flex items-center justify-center overflow-hidden bg-gradient-to-br shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] ring-1 ring-inset ring-white/15',
         meta.tile,
         className
       )}
     >
+      {/* Glossy top highlight, like a real macOS app icon. */}
+      <span className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/35 via-white/5 to-transparent" />
       <Glyph
-        className={cn('text-white drop-shadow-sm', glyphClassName)}
-        strokeWidth={1.8}
+        className={cn(
+          'relative text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]',
+          glyphClassName
+        )}
+        strokeWidth={1.9}
       />
     </div>
   );

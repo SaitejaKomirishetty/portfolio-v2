@@ -244,11 +244,9 @@ export function Window({ id, children }: WindowProps) {
         pointerEvents: minimized ? 'none' : 'auto',
       }}
       className={cn(
-        'flex flex-col overflow-hidden rounded-xl border border-hairline',
+        'flex flex-col overflow-hidden rounded-[12px] border border-hairline',
         'bg-[var(--background)]',
-        focused
-          ? 'shadow-[0_22px_70px_-12px_rgba(0,0,0,0.55)]'
-          : 'shadow-[0_12px_40px_-12px_rgba(0,0,0,0.4)]'
+        focused ? 'window-shadow' : 'window-shadow-inactive'
       )}
     >
       {/* Title bar */}
