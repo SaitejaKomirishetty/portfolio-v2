@@ -10,7 +10,7 @@ export interface SkillGroup {
 export const skills: SkillGroup[] = [
   {
     category: 'Languages',
-    items: ['HTML', 'CSS', 'JavaScript', 'TypeScript'],
+    items: ['HTML', 'CSS', 'JavaScript', 'TypeScript','Python','Java'],
   },
   {
     category: 'Frameworks & Libraries',
@@ -26,7 +26,7 @@ export const skills: SkillGroup[] = [
   },
   {
     category: 'Backend & Database',
-    items: ['Node.js', 'MySQL'],
+    items: ['Node.js', 'PostgreSQL','Mongo DB','MySQL'],
   },
   {
     category: 'Cloud & DevOps',
