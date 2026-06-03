@@ -1,31 +1,10 @@
 'use client';
 
-import {
-  User,
-  SquareTerminal,
-  FolderGit2,
-  FileText,
-  NotebookPen,
-  Mail,
-  Image as ImageIcon,
-  Settings,
-  type LucideIcon,
-} from 'lucide-react';
 import { apps, type AppId } from '@/data/apps';
 import { cn } from '@/lib/utils';
+import { AppGlyph } from './icons/AppGlyphs';
 
-const ICONS: Record<string, LucideIcon> = {
-  User,
-  SquareTerminal,
-  FolderGit2,
-  FileText,
-  NotebookPen,
-  Mail,
-  Image: ImageIcon,
-  Settings,
-};
-
-/** Rounded-square app tile with a gradient background + lucide glyph. */
+/** Rounded-squircle app tile with a gradient background + custom glyph. */
 export function AppIcon({
   id,
   className,
@@ -36,7 +15,6 @@ export function AppIcon({
   glyphClassName?: string;
 }) {
   const meta = apps[id];
-  const Glyph = ICONS[meta.icon] ?? User;
   return (
     <div
       className={cn(
@@ -47,12 +25,12 @@ export function AppIcon({
     >
       {/* Glossy top highlight, like a real macOS app icon. */}
       <span className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/35 via-white/5 to-transparent" />
-      <Glyph
+      <AppGlyph
+        id={id}
         className={cn(
-          'relative text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]',
+          'relative h-1/2 w-1/2 drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]',
           glyphClassName
         )}
-        strokeWidth={1.9}
       />
     </div>
   );

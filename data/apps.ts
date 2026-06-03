@@ -103,7 +103,7 @@ export const apps: Record<AppId, AppMeta> = {
     id: 'photos',
     name: 'Photos',
     icon: 'Image',
-    tile: 'from-fuchsia-400 to-purple-600',
+    tile: 'from-zinc-50 to-zinc-200',
     defaultSize: { width: 760, height: 540 },
     minSize: { width: 420, height: 360 },
     inDock: false,
