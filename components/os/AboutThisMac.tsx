@@ -63,8 +63,9 @@ export function AboutThisMac() {
             </div>
 
             <p className="mt-4 text-sm text-foreground/70">
-              This portfolio is a love letter to macOS, rebuilt as an
-              interactive desktop on the web.
+              An interactive portfolio reimagined as a OS-style desktop —
+              built to showcase my work in Front-end engineering and interaction
+              design.
             </p>
 
             <dl className="mt-5 space-y-1.5 text-left text-[13px]">
