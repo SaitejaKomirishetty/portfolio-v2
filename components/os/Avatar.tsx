@@ -26,13 +26,13 @@ export function Avatar({
     <div
       style={{ width: size, height: size }}
       className={cn(
-        'flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-sky-400 to-blue-600 shadow-lg',
+        'flex items-center justify-center overflow-hidden rounded-full bg-white shadow-lg',
         className
       )}
     >
       {errored ? (
         <span
-          className="font-semibold text-white"
+          className="font-semibold text-sky-600"
           style={{ fontSize: size * 0.36 }}
         >
           {initials}
@@ -44,7 +44,7 @@ export function Avatar({
           alt={profile.name}
           width={size}
           height={size}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
           onError={() => setErrored(true)}
         />
       )}
