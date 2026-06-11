@@ -29,6 +29,10 @@ export const appComponents: Record<AppId, ComponentType> = {
     loading: AppLoading,
     ssr: false,
   }),
+  finder: dynamic(() => import('./Finder').then((m) => m.Finder), {
+    loading: AppLoading,
+    ssr: false,
+  }),
   projects: dynamic(() => import('./Projects').then((m) => m.Projects), {
     loading: AppLoading,
     ssr: false,
@@ -41,6 +45,25 @@ export const appComponents: Record<AppId, ComponentType> = {
     loading: AppLoading,
     ssr: false,
   }),
+  notes: dynamic(() => import('./Notes').then((m) => m.Notes), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  calendar: dynamic(() => import('./Calendar').then((m) => m.Calendar), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  calculator: dynamic(() => import('./Calculator').then((m) => m.Calculator), {
+    loading: AppLoading,
+    ssr: false,
+  }),
+  activity: dynamic(
+    () => import('./ActivityMonitor').then((m) => m.ActivityMonitor),
+    {
+      loading: AppLoading,
+      ssr: false,
+    }
+  ),
   contact: dynamic(() => import('./Contact').then((m) => m.Contact), {
     loading: AppLoading,
     ssr: false,

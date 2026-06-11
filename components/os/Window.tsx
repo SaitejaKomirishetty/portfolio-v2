@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
@@ -26,12 +27,30 @@ interface WindowProps {
 
 type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
+/** Screen-edge snap targets, macOS/Windows-style. */
+type SnapZone = 'left' | 'right' | 'maximize';
+
+/** How close the cursor must get to a screen edge to arm a snap. */
+const SNAP_EDGE = 8;
+
 interface Gesture {
   type: 'drag' | ResizeDir;
   startX: number;
   startY: number;
   start: { x: number; y: number; width: number; height: number };
   controller: AbortController;
+}
+
+/** The window rectangle a given snap zone resolves to. */
+function snapBounds(zone: SnapZone) {
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1440;
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 900;
+  const top = MENUBAR_HEIGHT + 6;
+  const height = vh - top - DOCK_RESERVED;
+  const halfW = (vw - 24) / 2;
+  if (zone === 'left') return { x: 8, y: top, width: halfW, height };
+  if (zone === 'right') return { x: vw - 8 - halfW, y: top, width: halfW, height };
+  return { x: 8, y: top, width: vw - 16, height }; // maximize
 }
 
 export function Window({ id, children }: WindowProps) {
@@ -47,6 +66,10 @@ export function Window({ id, children }: WindowProps) {
   const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null);
+
+  // Active snap zone while dragging (drives the snap preview + drop target).
+  const [snap, setSnap] = useState<SnapZone | null>(null);
+  const snapRef = useRef<SnapZone | null>(null);
 
   // Position + size live as motion values so drag/resize update the transform
   // directly (no React re-render, no spring) — the window tracks the cursor
@@ -125,6 +148,16 @@ export function Window({ id, children }: WindowProps) {
       if (g.type === 'drag') {
         x.set(clamp(g.start.x + dx, 60 - g.start.width, vw - 60));
         y.set(clamp(g.start.y + dy, MENUBAR_HEIGHT, maxY - 16));
+
+        // Arm a snap zone when the cursor reaches a screen edge.
+        let zone: SnapZone | null = null;
+        if (e.clientY <= MENUBAR_HEIGHT) zone = 'maximize';
+        else if (e.clientX <= SNAP_EDGE) zone = 'left';
+        else if (e.clientX >= vw - SNAP_EDGE) zone = 'right';
+        if (zone !== snapRef.current) {
+          snapRef.current = zone;
+          setSnap(zone);
+        }
         return;
       }
 
@@ -169,13 +202,23 @@ export function Window({ id, children }: WindowProps) {
     gesture.current = null;
     document.body.style.userSelect = '';
     g?.controller.abort();
-    // Commit the final geometry to the store in a single update.
-    setBounds(id, {
-      x: x.get(),
-      y: y.get(),
-      width: w.get(),
-      height: h.get(),
-    });
+
+    const zone = snapRef.current;
+    snapRef.current = null;
+    setSnap(null);
+
+    // Commit the final geometry to the store in a single update. A snap zone
+    // wins over the raw drag position; the sync effect then animates into it.
+    if (zone) {
+      setBounds(id, snapBounds(zone));
+    } else {
+      setBounds(id, {
+        x: x.get(),
+        y: y.get(),
+        width: w.get(),
+        height: h.get(),
+      });
+    }
   }, [id, setBounds, x, y, w, h]);
 
   // Begin a drag or resize gesture; listeners auto-remove via AbortController.
@@ -184,6 +227,8 @@ export function Window({ id, children }: WindowProps) {
       const current = useWindowStore.getState().windows[id];
       if (!current || current.maximized) return;
       focus(id);
+      snapRef.current = null;
+      setSnap(null);
       const controller = new AbortController();
       gesture.current = {
         type,
@@ -209,11 +254,35 @@ export function Window({ id, children }: WindowProps) {
   if (!win) return null;
 
   const { zIndex } = win;
+  const previewRect = snap ? snapBounds(snap) : null;
 
   return (
-    <motion.div
-      ref={rootRef}
-      role="dialog"
+    <>
+      {previewRect && (
+        <motion.div
+          aria-hidden
+          initial={{
+            opacity: 0,
+            left: previewRect.x,
+            top: previewRect.y,
+            width: previewRect.width,
+            height: previewRect.height,
+          }}
+          animate={{
+            opacity: 1,
+            left: previewRect.x,
+            top: previewRect.y,
+            width: previewRect.width,
+            height: previewRect.height,
+          }}
+          transition={{ duration: 0.14, ease: 'easeOut' }}
+          style={{ position: 'fixed', zIndex: Math.max(1, zIndex - 1) }}
+          className="pointer-events-none rounded-[12px] border-2 border-[var(--color-accent)] bg-[var(--color-accent)]/15"
+        />
+      )}
+      <motion.div
+        ref={rootRef}
+        role="dialog"
       aria-label={`${meta.name} window`}
       aria-modal={false}
       tabIndex={-1}
@@ -282,7 +351,8 @@ export function Window({ id, children }: WindowProps) {
 
       {/* Resize handles (hidden while maximized) */}
       {!win.maximized && <ResizeHandles onStart={startGesture} />}
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
 

@@ -19,6 +19,10 @@ import { LoginScreen } from './LoginScreen';
 import { AboutThisMac } from './AboutThisMac';
 import { ContextMenu } from './ContextMenu';
 import { Spotlight } from './Spotlight';
+import { Launchpad } from './Launchpad';
+import { ControlCenter } from './ControlCenter';
+import { NotificationCenter } from './NotificationCenter';
+import { NotificationToasts } from './NotificationToasts';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { MobileHome } from './MobileHome';
 
@@ -32,8 +36,10 @@ export function Desktop() {
   const hasBooted = useSystemStore((s) => s.hasBooted);
   const markBooted = useSystemStore((s) => s.markBooted);
   const wallpaperId = useSystemStore((s) => s.wallpaperId);
+  const brightness = useSystemStore((s) => s.brightness);
   const open = useWindowStore((s) => s.open);
   const openContextMenu = useUIStore((s) => s.openContextMenu);
+  const pushNotification = useUIStore((s) => s.pushNotification);
 
   const [phase, setPhase] = useState<BootPhase>('boot');
   const firstLogin = useRef(true);
@@ -72,8 +78,17 @@ export function Desktop() {
     if (firstLogin.current) {
       firstLogin.current = false;
       setTimeout(() => open('about'), 400);
+      setTimeout(
+        () =>
+          pushNotification({
+            appId: 'finder',
+            title: 'Welcome to portfolioOS',
+            body: 'Open Launchpad in the Dock, or press ⌘Space for Spotlight.',
+          }),
+        1400
+      );
     }
-  }, [markBooted, open]);
+  }, [markBooted, open, pushNotification]);
 
   if (!mounted) {
     // Avoid hydration mismatch: paint a neutral black until hydrated.
@@ -105,10 +120,23 @@ export function Desktop() {
       </main>
 
       <Dock />
+      <Launchpad />
       <ContextMenu />
+      <ControlCenter />
+      <NotificationCenter />
+      <NotificationToasts />
       <AboutThisMac />
       <Spotlight />
       <KeyboardShortcuts />
+
+      {/* Display brightness dimmer (driven by Control Center). */}
+      {brightness < 1 && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[9000] bg-black"
+          style={{ opacity: 1 - brightness }}
+        />
+      )}
 
       <AnimatePresence>
         {phase === 'boot' && (

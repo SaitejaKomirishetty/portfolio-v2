@@ -6,6 +6,7 @@ import { useUIStore } from '@/store/useUIStore';
 
 /**
  * Global keyboard shortcuts:
+ *   F4             → toggle Launchpad
  *   ⌘/Ctrl + Space → toggle Spotlight
  *   ⌘/Ctrl + W     → close focused window
  *   ⌘/Ctrl + M     → minimize focused window
@@ -14,6 +15,13 @@ import { useUIStore } from '@/store/useUIStore';
 export function KeyboardShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Launchpad on F4 (no modifier).
+      if (e.key === 'F4') {
+        e.preventDefault();
+        useUIStore.getState().toggleLaunchpad();
+        return;
+      }
+
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
 

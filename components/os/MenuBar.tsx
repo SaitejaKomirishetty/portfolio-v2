@@ -1,6 +1,12 @@
 'use client';
 
-import { BatteryFull, Wifi, Search, SlidersHorizontal } from 'lucide-react';
+import {
+  BatteryFull,
+  Wifi,
+  WifiOff,
+  Search,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { AppleLogo } from './icons/AppleLogo';
 import { MenuDropdown, type MenuItem } from './MenuDropdown';
 import { useClock } from '@/hooks/useClock';
@@ -18,6 +24,9 @@ export function MenuBar() {
   const toggleMaximize = useWindowStore((s) => s.toggleMaximize);
   const openSpotlight = useUIStore((s) => s.openSpotlight);
   const openAbout = useUIStore((s) => s.openAbout);
+  const toggleControlCenter = useUIStore((s) => s.toggleControlCenter);
+  const toggleNotificationCenter = useUIStore((s) => s.toggleNotificationCenter);
+  const wifi = useUIStore((s) => s.wifi);
   const lockScreen = useSystemStore((s) => s.reset);
 
   const activeName = focused ? apps[focused].name : 'Finder';
@@ -105,7 +114,11 @@ export function MenuBar() {
       {/* Right cluster */}
       <div className="flex items-center gap-1.5">
         <BatteryFull className="h-4 w-4" aria-label="Battery" />
-        <Wifi className="h-4 w-4" aria-label="Wi-Fi" />
+        {wifi ? (
+          <Wifi className="h-4 w-4" aria-label="Wi-Fi on" />
+        ) : (
+          <WifiOff className="h-4 w-4 opacity-50" aria-label="Wi-Fi off" />
+        )}
         <button
           type="button"
           aria-label="Spotlight Search"
@@ -116,14 +129,23 @@ export function MenuBar() {
         </button>
         <button
           type="button"
+          data-cc-trigger
           aria-label="Control Center"
-          onClick={() => open('settings')}
+          onClick={toggleControlCenter}
           className="rounded p-1 hover:bg-white/10"
         >
           <SlidersHorizontal className="h-4 w-4" />
         </button>
-        <span className="ml-1 tabular-nums">{date}</span>
-        <span className="tabular-nums">{time}</span>
+        <button
+          type="button"
+          data-nc-trigger
+          aria-label="Date and time — open Notification Center"
+          onClick={toggleNotificationCenter}
+          className="ml-0.5 flex items-center gap-1.5 rounded px-1 py-0.5 tabular-nums hover:bg-white/10"
+        >
+          <span>{date}</span>
+          <span>{time}</span>
+        </button>
       </div>
     </header>
   );

@@ -8,9 +8,14 @@
 export type AppId =
   | 'about'
   | 'terminal'
+  | 'finder'
   | 'projects'
   | 'resume'
   | 'blog'
+  | 'notes'
+  | 'calendar'
+  | 'calculator'
+  | 'activity'
   | 'contact'
   | 'photos'
   | 'settings';
@@ -57,6 +62,16 @@ export const apps: Record<AppId, AppMeta> = {
     inDock: true,
     description: 'Explore the portfolio via commands',
   },
+  finder: {
+    id: 'finder',
+    name: 'Finder',
+    icon: 'Folder',
+    tile: 'from-sky-400 to-blue-600',
+    defaultSize: { width: 820, height: 560 },
+    minSize: { width: 520, height: 360 },
+    inDock: true,
+    description: 'Browse files, projects, and folders',
+  },
   projects: {
     id: 'projects',
     name: 'Projects',
@@ -88,6 +103,45 @@ export const apps: Record<AppId, AppMeta> = {
     minSize: { width: 480, height: 380 },
     inDock: true,
     description: 'Notes on web development',
+  },
+  notes: {
+    id: 'notes',
+    name: 'Notes',
+    icon: 'StickyNote',
+    tile: 'from-zinc-50 to-zinc-200',
+    defaultSize: { width: 720, height: 520 },
+    minSize: { width: 460, height: 360 },
+    inDock: true,
+    description: 'Quick notes, saved on this device',
+  },
+  calendar: {
+    id: 'calendar',
+    name: 'Calendar',
+    icon: 'Calendar',
+    tile: 'from-zinc-50 to-zinc-200',
+    defaultSize: { width: 760, height: 560 },
+    minSize: { width: 520, height: 420 },
+    inDock: true,
+    description: 'A month-view calendar',
+  },
+  calculator: {
+    id: 'calculator',
+    name: 'Calculator',
+    icon: 'Calculator',
+    tile: 'from-neutral-700 to-neutral-900',
+    defaultSize: { width: 300, height: 460 },
+    minSize: { width: 260, height: 420 },
+    inDock: true,
+    description: 'A simple calculator',
+  },
+  activity: {
+    id: 'activity',
+    name: 'Activity Monitor',
+    icon: 'Activity',
+    tile: 'from-emerald-400 to-green-600',
+    defaultSize: { width: 720, height: 520 },
+    minSize: { width: 480, height: 360 },
+    description: 'Running apps and system load',
   },
   contact: {
     id: 'contact',
@@ -124,11 +178,15 @@ export const apps: Record<AppId, AppMeta> = {
 
 /** Apps in dock order. */
 export const dockApps: AppId[] = [
+  'finder',
   'about',
   'terminal',
   'projects',
   'resume',
   'blog',
+  'notes',
+  'calendar',
+  'calculator',
   'contact',
   'settings',
 ];
