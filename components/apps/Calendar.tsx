@@ -244,7 +244,7 @@ export function Calendar() {
                 >
                   <span
                     className={cn(
-                      'flex h-7 w-7 items-center justify-center rounded-full text-[13px] tabular-nums transition-colors',
+                      'flex h-7 w-7 items-center justify-center rounded-full text-[13px] leading-none tabular-nums transition-colors',
                       isToday && 'bg-rose-500 font-semibold text-white',
                       !isToday && cell.inMonth && 'font-medium text-foreground',
                       !isToday && !cell.inMonth && 'text-foreground/30'
@@ -255,7 +255,9 @@ export function Calendar() {
                         {MONTH_ABBR[cell.month]} {cell.day}
                       </span>
                     ) : (
-                      cell.day
+                      <span>
+                        {cell.day}
+                      </span>
                     )}
                   </span>
                   {hasMarker && (
