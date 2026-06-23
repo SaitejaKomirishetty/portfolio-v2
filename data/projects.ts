@@ -18,6 +18,28 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    id: 'nestling-baby-tracker',
+    title: 'Nestling — Baby Tracker',
+    description:
+      'Mobile-first PWA for tracking newborn feeds, sleep, diapers, growth, temperature, and medications — with a warm, late-night nursery theme.',
+    longDescription:
+      'A full-stack PWA for caregivers to log feeds, diapers, sleep, growth, temperature, medications, and notes. The dashboard centers on "time since last feed" with a visual timer, while analytics surface feeding frequency, sleep patterns, diaper counts, and WHO percentile growth charts. It supports multi-caregiver households with role-based access, an editable day-grouped timeline, offline-capable install via a service worker, and timezone-correct timestamps.',
+    tech: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'PostgreSQL',
+      'Drizzle ORM',
+      'NextAuth',
+      'Tailwind CSS',
+    ],
+    github: 'https://github.com/SaitejaKomirishetty/baby_tracker',
+    demo: 'https://babytracker.saitejakomirishetty.com',
+    image:
+      'https://raw.githubusercontent.com/SaitejaKomirishetty/baby_tracker/main/docs/screenshots/dashboard.png',
+    featured: true,
+  },
+  {
     id: 'comfy-sloth',
     title: 'Comfy Sloth',
     description:
